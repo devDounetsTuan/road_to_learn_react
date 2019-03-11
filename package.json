@@ -1,0 +1,25 @@
+{
+  "name": "road_to_learn_react",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "react": "^16.8.4",
+    "react-dom": "^16.8.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devDounetsTuan/road_to_learn_react.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/devDounetsTuan/road_to_learn_react/issues"
+  },
+  "homepage": "https://github.com/devDounetsTuan/road_to_learn_react#readme"
+}
