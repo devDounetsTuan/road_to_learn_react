@@ -1,49 +1,52 @@
-import React, {
-  Component
-} from 'react';
+import React, { Component ,PureComponent } from "react";
 //import logo from './logo.svg';
-import './App.css';
+import "./App.css";
 
-const list = [{
-  title: 'React',
-  url: 'https://facebook.github.io/react/',
-  author: 'Jordan Walke',
-  num_comments: 3,
-  points: 4,
-  objectID: 0,
-},
-{
-  title: 'Redux',
-  url: 'https://github.com/reactjs/redux',
-  author: 'Dan Abramov, Andrew Clark',
-  num_comments: 2,
-  points: 5,
-  objectID: 1,
-},
-];
-
-function isSearched(searchTerm) {
-  return function (item) {
-    return !searchTerm ||
-      item.title.toLowerCase().includes(searchTerm.toLowerCase());
+const list = [
+  {
+    title: "React",
+    url: "https://facebook.github.io/react/",
+    author: "Jordan Walke",
+    num_comments: 3,
+    points: 4,
+    objectID: 0,
+    time: new Date().toLocaleTimeString()
+  },
+  {
+    title: "Redux",
+    url: "https://github.com/reactjs/redux",
+    author: "Dan Abramov, Andrew Clark",
+    num_comments: 2,
+    points: 5,
+    objectID: 1,
+    time: new Date().toLocaleTimeString()
   }
+];
+function isSearched(searchTerm) {
+  return function(item) {
+    return (
+      !searchTerm || item.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
 }
-//const isSearched = (searchTerm) => (item) =>!searchTerm || item.title.toLowerCase().includes(searchTerm.toLowerCase());
-
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
       list,
-      searchTerm: '',
+      searchTerm: "",
+      //list: list,
     };
     this.onSearchChange = this.onSearchChange.bind(this);
     this.onDismiss = this.onDismiss.bind(this);
   }
   onDismiss(id) {
+    /* const isNotId = item => item.objectID !== id;
+    const updatedList = this.state.list.filter(isNotId); */
     const updatedList = this.state.list.filter(item => item.objectID !== id);
     this.setState({ list: updatedList });
   }
+
   onSearchChange(event) {
     this.setState({ searchTerm: event.target.value });
   }
@@ -52,15 +55,36 @@ class App extends Component {
     const { searchTerm, list } = this.state;
     return (
       <div className="App">
-        <form>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={this.onSearchChange}
-          />
-        </form>
+        <Search value={searchTerm} onChange={this.onSearchChange}>
+          Search
+        </Search>
+        <Table list={list} pattern={searchTerm} onDismiss={this.onDismiss} />
+      </div>
+    );
+  }
+}
 
-        {list.filter(isSearched(searchTerm)).map(item=>
+
+
+class Search extends PureComponent {
+  render() {
+    const { value, onChange, children } = this.props;
+    console.log('log'); 
+    return (
+      <form>
+        {children}
+        <input type="text" value={value} onChange={onChange} />
+      </form>
+    );
+  }
+}
+
+class Table extends Component {
+  render() {
+    const { list, pattern, onDismiss } = this.props;
+    return (
+      <div>
+        {list.filter(isSearched(pattern)).map(item => (
           <div key={item.objectID}>
             <span>
               <a href={item.url}>{item.title}</a>
@@ -68,20 +92,25 @@ class App extends Component {
             <span>{item.author}</span>
             <span>{item.num_comments}</span>
             <span>{item.points}</span>
-            <span>{item.points}</span>
             <span>
-              <button
-                onClick={() => this.onDismiss(item.objectID)}
-                type="button"
-              >
+              <Button onClick={() => onDismiss(item.objectID)} >
                 Dismiss
-                </button>
+              </Button>
             </span>
           </div>
-        )}
+        ))}
       </div>
-    )
+    );
   }
 }
-
+class Button extends Component {
+  render() {
+    const { onClick, className = '', children } = this.props;
+    return (
+      <button onClick={onClick} className={className} type="button">
+        {children}
+      </button>
+    );
+  }
+}
 export default App;
