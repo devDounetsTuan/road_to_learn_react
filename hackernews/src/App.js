@@ -1,27 +1,14 @@
-import React, { Component ,PureComponent } from "react";
+import React, { Component /* , PureComponent */ } from "react";
 //import logo from './logo.svg';
 import "./App.css";
+const DEFAULT_QUERY = "redux";
 
-const list = [
-  {
-    title: "React",
-    url: "https://facebook.github.io/react/",
-    author: "Jordan Walke",
-    num_comments: 3,
-    points: 4,
-    objectID: 0,
-    time: new Date().toLocaleTimeString()
-  },
-  {
-    title: "Redux",
-    url: "https://github.com/reactjs/redux",
-    author: "Dan Abramov, Andrew Clark",
-    num_comments: 2,
-    points: 5,
-    objectID: 1,
-    time: new Date().toLocaleTimeString()
-  }
-];
+const PATH_BASE = "https://hn.algolia.com/api/v1";
+const PATH_SEARCH = "/search";
+const PARAM_SEARCH = "query=";
+const url = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${DEFAULT_QUERY}`;
+console.log(url);
+
 function isSearched(searchTerm) {
   return function(item) {
     return (
@@ -33,18 +20,42 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      list,
-      searchTerm: "",
+      result: null,
+      searchTerm: DEFAULT_QUERY
       //list: list,
     };
+    this.setSearchTopstories = this.setSearchTopstories.bind(this);
+    this.fetchSearchTopstories = this.fetchSearchTopstories.bind(this);
     this.onSearchChange = this.onSearchChange.bind(this);
     this.onDismiss = this.onDismiss.bind(this);
   }
+
+  setSearchTopstories(result) {
+    this.setState({ result });
+  }
+
+  fetchSearchTopstories(searchTerm) {
+    fetch(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}`)
+      .then(response => response.json())
+      .then(result => this.setSearchTopstories(result));
+  }
+
+  componentDidMount() {
+    const { searchTerm } = this.state;
+    this.fetchSearchTopstories(searchTerm);
+  }
+
   onDismiss(id) {
     /* const isNotId = item => item.objectID !== id;
     const updatedList = this.state.list.filter(isNotId); */
-    const updatedList = this.state.list.filter(item => item.objectID !== id);
-    this.setState({ list: updatedList });
+    const updatedHits = this.state.result.hits.filter(
+      item => item.objectID !== id
+    );
+    console.log(this.state.result);
+    console.log(updatedHits);
+    this.setState({
+      result: {...this.state.result, hits: updatedHits}
+    });
   }
 
   onSearchChange(event) {
@@ -52,24 +63,32 @@ class App extends Component {
   }
 
   render() {
-    const { searchTerm, list } = this.state;
+    const { searchTerm, result } = this.state;
+    if (!result) {
+      return null;
+    }
     return (
-      <div className="App">
-        <Search value={searchTerm} onChange={this.onSearchChange}>
-          Search
-        </Search>
-        <Table list={list} pattern={searchTerm} onDismiss={this.onDismiss} />
+      <div className="page">
+        <div className="interactions">
+          <Search value={searchTerm} onChange={this.onSearchChange}>
+            Search
+          </Search>
+        </div>
+        <Table
+          list={result.hits}
+          pattern={searchTerm}
+          onDismiss={this.onDismiss}
+        />
       </div>
     );
   }
 }
 
-
-
+/* 
 class Search extends PureComponent {
   render() {
     const { value, onChange, children } = this.props;
-    console.log('log'); 
+   
     return (
       <form>
         {children}
@@ -77,23 +96,44 @@ class Search extends PureComponent {
       </form>
     );
   }
-}
+} */
+
+//function stateless component
+const Search = ({ value, onChange, children }) => {
+  return (
+    <form>
+      {children} <input type="text" value={value} onChange={onChange} />
+    </form>
+  );
+};
 
 class Table extends Component {
   render() {
     const { list, pattern, onDismiss } = this.props;
+    const largeColumn = {
+      width: "40%"
+    };
+    const midColumn = {
+      width: "30%"
+    };
+    const smallColumn = {
+      width: "10%"
+    };
     return (
-      <div>
+      <div className="table">
         {list.filter(isSearched(pattern)).map(item => (
-          <div key={item.objectID}>
-            <span>
+          <div key={item.objectID} className="table-row">
+            <span style={largeColumn}>
               <a href={item.url}>{item.title}</a>
             </span>
-            <span>{item.author}</span>
-            <span>{item.num_comments}</span>
-            <span>{item.points}</span>
-            <span>
-              <Button onClick={() => onDismiss(item.objectID)} >
+            <span style={midColumn}>{item.author}</span>
+            <span style={smallColumn}>{item.num_comments}</span>
+            <span style={smallColumn}>{item.points}</span>
+            <span style={smallColumn}>
+              <Button
+                onClick={() => onDismiss(item.objectID)}
+                className="button-inline"
+              >
                 Dismiss
               </Button>
             </span>
@@ -105,7 +145,8 @@ class Table extends Component {
 }
 class Button extends Component {
   render() {
-    const { onClick, className = '', children } = this.props;
+    const { onClick, className = "", children } = this.props;
+    //  console.log('log');
     return (
       <button onClick={onClick} className={className} type="button">
         {children}
